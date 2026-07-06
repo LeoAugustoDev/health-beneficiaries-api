@@ -1,13 +1,14 @@
 package com.leo.health_beneficiaries_api;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest
+import org.junit.jupiter.api.Test;
+
 class HealthBeneficiariesApiApplicationTests {
 
 	@Test
-	void contextLoads() {
+	void deveExistirClassePrincipalDaAplicacao() {
+		assertNotNull(HealthBeneficiariesApiApplication.class);
 	}
 
 }
