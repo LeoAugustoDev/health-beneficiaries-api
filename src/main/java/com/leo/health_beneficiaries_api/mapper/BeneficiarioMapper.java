@@ -16,7 +16,6 @@ public class BeneficiarioMapper {
 		Beneficiario beneficiario = Beneficiario.builder()
 				.nome(request.getNome())
 				.telefone(request.getTelefone())
-				.email(request.getEmail())
 				.dataNascimento(request.getDataNascimento())
 				.build();
 
@@ -30,8 +29,9 @@ public class BeneficiarioMapper {
 				.id(beneficiario.getId())
 				.nome(beneficiario.getNome())
 				.telefone(beneficiario.getTelefone())
-				.email(beneficiario.getEmail())
 				.dataNascimento(beneficiario.getDataNascimento())
+				.dataInclusao(beneficiario.getDataInclusao())
+				.dataAtualizacao(beneficiario.getDataAtualizacao())
 				.documentos(toDocumentoDTOs(beneficiario.getDocumentos()))
 				.build();
 	}
@@ -64,15 +64,17 @@ public class BeneficiarioMapper {
 
 	private DocumentoDTO toDocumentoDTO(Documento documento) {
 		return DocumentoDTO.builder()
-				.tipo(documento.getTipo())
-				.numero(documento.getNumero())
+				.tipoDocumento(documento.getTipoDocumento())
+				.descricao(documento.getDescricao())
+				.dataInclusao(documento.getDataInclusao())
+				.dataAtualizacao(documento.getDataAtualizacao())
 				.build();
 	}
 
 	private Documento toDocumento(DocumentoDTO documento) {
 		return Documento.builder()
-				.tipo(documento.getTipo())
-				.numero(documento.getNumero())
+				.tipoDocumento(documento.getTipoDocumento())
+				.descricao(documento.getDescricao())
 				.build();
 	}
 }

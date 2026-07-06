@@ -6,10 +6,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -19,10 +21,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(
-		name = "beneficiarios",
-		indexes = @Index(name = "idx_beneficiarios_email", columnList = "email")
-)
+@Table(name = "beneficiarios")
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -39,11 +38,14 @@ public class Beneficiario {
 	@Column(nullable = false, length = 20)
 	private String telefone;
 
-	@Column(nullable = false, unique = true, length = 150)
-	private String email;
-
 	@Column(name = "data_nascimento", nullable = false)
 	private LocalDate dataNascimento;
+
+	@Column(name = "data_inclusao", nullable = false, updatable = false)
+	private LocalDateTime dataInclusao;
+
+	@Column(name = "data_atualizacao", nullable = false)
+	private LocalDateTime dataAtualizacao;
 
 	@Builder.Default
 	@OneToMany(mappedBy = "beneficiario", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -63,11 +65,23 @@ public class Beneficiario {
 		}
 	}
 
-	public void atualizarDados(String nome, String telefone, String email, LocalDate dataNascimento, List<Documento> documentos) {
+	public void atualizarDados(String nome, String telefone, LocalDate dataNascimento, List<Documento> documentos) {
 		this.nome = nome;
 		this.telefone = telefone;
-		this.email = email;
 		this.dataNascimento = dataNascimento;
+		this.dataAtualizacao = LocalDateTime.now();
 		substituirDocumentos(documentos);
+	}
+
+	@PrePersist
+	private void prePersist() {
+		LocalDateTime agora = LocalDateTime.now();
+		this.dataInclusao = agora;
+		this.dataAtualizacao = agora;
+	}
+
+	@PreUpdate
+	private void preUpdate() {
+		this.dataAtualizacao = LocalDateTime.now();
 	}
 }

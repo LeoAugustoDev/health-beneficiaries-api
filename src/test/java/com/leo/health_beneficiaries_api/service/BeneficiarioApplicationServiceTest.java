@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import com.leo.health_beneficiaries_api.dto.BeneficiarioRequestDTO;
 import com.leo.health_beneficiaries_api.dto.BeneficiarioResponseDTO;
 import com.leo.health_beneficiaries_api.entity.Beneficiario;
-import com.leo.health_beneficiaries_api.exception.BusinessException;
 import com.leo.health_beneficiaries_api.exception.ResourceNotFoundException;
 import com.leo.health_beneficiaries_api.helper.DataHelper;
 import com.leo.health_beneficiaries_api.mapper.BeneficiarioMapper;
@@ -45,7 +44,6 @@ class BeneficiarioApplicationServiceTest {
 		BeneficiarioRequestDTO request = DataHelper.criarBeneficiarioRequest();
 		Beneficiario beneficiarioSalvo = DataHelper.criarBeneficiario();
 
-		when(beneficiarioRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
 		when(beneficiarioRepository.save(any(Beneficiario.class))).thenReturn(beneficiarioSalvo);
 
 		BeneficiarioResponseDTO response = beneficiarioApplicationService.criar(request);
@@ -53,28 +51,30 @@ class BeneficiarioApplicationServiceTest {
 		assertNotNull(response);
 		assertEquals(beneficiarioSalvo.getId(), response.getId());
 		assertEquals(request.getNome(), response.getNome());
-		assertEquals(request.getEmail(), response.getEmail());
 		assertEquals(1, response.getDocumentos().size());
+		assertEquals("CPF", response.getDocumentos().getFirst().getTipoDocumento());
 
-		verify(beneficiarioRepository).findByEmail(request.getEmail());
 		verify(beneficiarioRepository).save(any(Beneficiario.class));
 	}
 
 	@Test
-	void deveLancarBusinessExceptionAoCriarBeneficiarioComEmailJaCadastrado() {
-		BeneficiarioRequestDTO request = DataHelper.criarBeneficiarioRequest();
-		Beneficiario beneficiarioExistente = DataHelper.criarBeneficiario();
+	void deveAtualizarBeneficiario() {
+		Long id = 1L;
+		BeneficiarioRequestDTO request = DataHelper.criarBeneficiarioAtualizacaoRequest();
+		Beneficiario beneficiario = DataHelper.criarBeneficiario();
 
-		when(beneficiarioRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(beneficiarioExistente));
+		when(beneficiarioRepository.findById(id)).thenReturn(Optional.of(beneficiario));
+		when(beneficiarioRepository.save(beneficiario)).thenReturn(beneficiario);
 
-		BusinessException exception = assertThrows(
-				BusinessException.class,
-				() -> beneficiarioApplicationService.criar(request)
-		);
+		BeneficiarioResponseDTO response = beneficiarioApplicationService.atualizar(id, request);
 
-		assertEquals("Email ja cadastrado", exception.getMessage());
-		verify(beneficiarioRepository).findByEmail(request.getEmail());
-		verify(beneficiarioRepository, never()).save(any(Beneficiario.class));
+		assertNotNull(response);
+		assertEquals(request.getNome(), response.getNome());
+		assertEquals(request.getTelefone(), response.getTelefone());
+		assertEquals("RG", response.getDocumentos().getFirst().getTipoDocumento());
+
+		verify(beneficiarioRepository).findById(id);
+		verify(beneficiarioRepository).save(beneficiario);
 	}
 
 	@Test

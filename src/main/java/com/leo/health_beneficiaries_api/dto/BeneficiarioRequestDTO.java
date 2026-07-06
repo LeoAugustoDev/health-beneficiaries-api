@@ -1,7 +1,6 @@
 package com.leo.health_beneficiaries_api.dto;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -22,11 +21,6 @@ public class BeneficiarioRequestDTO {
 	@NotBlank(message = "Telefone e obrigatorio")
 	@Size(max = 20, message = "Telefone deve ter no maximo 20 caracteres")
 	String telefone;
-
-	@NotBlank(message = "Email e obrigatorio")
-	@Email(message = "Email deve ser valido")
-	@Size(max = 150, message = "Email deve ter no maximo 150 caracteres")
-	String email;
 
 	@NotNull(message = "Data de nascimento e obrigatoria")
 	@Past(message = "Data de nascimento deve estar no passado")

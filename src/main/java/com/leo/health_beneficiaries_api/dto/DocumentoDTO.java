@@ -2,6 +2,7 @@ package com.leo.health_beneficiaries_api.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Value;
 
@@ -10,10 +11,13 @@ import lombok.Value;
 public class DocumentoDTO {
 
 	@NotBlank(message = "Tipo do documento e obrigatorio")
-	@Size(max = 30, message = "Tipo do documento deve ter no maximo 30 caracteres")
-	String tipo;
+	@Size(max = 50, message = "Tipo do documento deve ter no maximo 50 caracteres")
+	String tipoDocumento;
 
-	@NotBlank(message = "Numero do documento e obrigatorio")
-	@Size(max = 50, message = "Numero do documento deve ter no maximo 50 caracteres")
-	String numero;
+	@NotBlank(message = "Descricao do documento e obrigatoria")
+	@Size(max = 255, message = "Descricao do documento deve ter no maximo 255 caracteres")
+	String descricao;
+
+	LocalDateTime dataInclusao;
+	LocalDateTime dataAtualizacao;
 }
