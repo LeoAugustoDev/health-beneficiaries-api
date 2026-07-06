@@ -1,3 +1,27 @@
 spring:
   application:
     name: health-beneficiaries-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/health_beneficiaries}
+    username: ${DATABASE_USERNAME:health}
+    password: ${DATABASE_PASSWORD:health}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:true}
+    properties:
+      hibernate:
+        format_sql: true
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  servlet:
+    context-path: /health-beneficiaries/api
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
