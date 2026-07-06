@@ -2,11 +2,9 @@
 
 API REST desenvolvida em Java com Spring Boot para gerenciamento de beneficiários de um plano de saúde e seus documentos associados.
 
-Este projeto foi desenvolvido como parte de uma avaliação para Desenvolvedor Backend Java. A aplicação tem como objetivo manter o cadastro de beneficiários de um plano de saúde, permitindo cadastrar beneficiários junto com seus documentos, listar beneficiários cadastrados, listar documentos de um beneficiário, atualizar dados cadastrais e remover beneficiários.
+Este projeto foi desenvolvido como parte de uma avaliação para Desenvolvedor Backend Java. A aplicação permite manter o cadastro de beneficiários, cadastrar documentos vinculados, listar beneficiários cadastrados, listar documentos de um beneficiário, atualizar dados cadastrais e remover beneficiários.
 
----
-
-# Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 - Java 21+
 - Spring Boot
@@ -20,9 +18,7 @@ Este projeto foi desenvolvido como parte de uma avaliação para Desenvolvedor B
 - Mockito
 - Docker Compose
 
----
-
-# Funcionalidades
+## Funcionalidades
 
 - Cadastrar um beneficiário junto com seus documentos
 - Listar todos os beneficiários cadastrados
@@ -33,214 +29,199 @@ Este projeto foi desenvolvido como parte de uma avaliação para Desenvolvedor B
 - Retornar mensagens claras e padronizadas em caso de erro
 - Documentar os endpoints com Swagger
 
----
-
-# Arquitetura do Projeto
+## Arquitetura do Projeto
 
 O projeto foi organizado em camadas para manter separação de responsabilidades, facilitar manutenção e permitir evolução da aplicação.
 
+```text
+src/main/java/.../
+├── controller
+├── service
+├── repository
+├── entity
+├── dto
+├── mapper
+├── exception
+└── config
 ```
-controller
-service
-repository
-entity
-dto
-mapper
-exception
-config
-```
 
-### Descrição das camadas
+- `controller`: camada responsável por expor os endpoints REST.
+- `service`: camada responsável por orquestrar os casos de uso e aplicar regras de negócio da aplicação.
+- `repository`: camada responsável pelo acesso ao banco de dados usando Spring Data JPA.
+- `entity`: camada com as entidades JPA do domínio.
+- `dto`: objetos usados para entrada e saída de dados da API.
+- `mapper`: camada responsável por converter entidades em DTOs e DTOs em entidades.
+- `exception`: camada responsável por exceções customizadas e tratamento global de erros.
+- `config`: camada de configurações da aplicação, incluindo Swagger/OpenAPI.
 
-- **controller** → responsável por expor os endpoints REST.
-- **service** → responsável pelas regras de negócio.
-- **repository** → acesso ao banco de dados utilizando Spring Data JPA.
-- **entity** → entidades JPA.
-- **dto** → objetos de entrada e saída da API.
-- **mapper** → conversão entre entidades e DTOs.
-- **exception** → exceções customizadas e tratamento global.
-- **config** → configurações da aplicação.
+## Modelo de Domínio
 
----
+A aplicação possui duas entidades principais: `Beneficiario` e `Documento`.
 
-# Modelo de Domínio
+Um beneficiário pode possuir vários documentos, e cada documento pertence a um único beneficiário.
 
-A aplicação possui duas entidades principais:
-
-## Beneficiario
+### Beneficiario
 
 Campos:
 
-- id
-- nome
-- telefone
-- email
-- dataNascimento
-- documentos
+- `id`
+- `nome`
+- `telefone`
+- `dataNascimento`
+- `dataInclusao`
+- `dataAtualizacao`
+- `documentos`
 
-## Documento
+### Documento
 
 Campos:
 
-- id
-- tipo
-- numero
-- beneficiario
+- `id`
+- `tipoDocumento`
+- `descricao`
+- `dataInclusao`
+- `dataAtualizacao`
+- `beneficiario`
 
----
+## Relacionamento entre Entidades
 
-# Relacionamento Entre Entidades
+O relacionamento entre beneficiário e documento foi implementado com JPA da seguinte forma:
 
-Foi utilizado JPA da seguinte forma:
+- `Beneficiario` possui relacionamento `@OneToMany` com `Documento`.
+- `Documento` possui relacionamento `@ManyToOne` com `Beneficiario`.
+- Foi utilizado `cascade = CascadeType.ALL` para persistir documentos junto com o beneficiário.
+- Foi utilizado `orphanRemoval = true` para remover documentos órfãos quando necessário.
 
-- `Beneficiario` → `@OneToMany`
-- `Documento` → `@ManyToOne`
-- `cascade = CascadeType.ALL`
-- `orphanRemoval = true`
+## Endpoints da API
 
----
-
-# Endpoints da API
-
-**Base URL**
+Base URL local:
 
 ```text
 http://localhost:8080/health-beneficiaries/api
 ```
 
-## Cadastrar Beneficiário
+### Cadastrar Beneficiário
 
 ```http
 POST /beneficiarios
 ```
 
-### Request
+Exemplo de request:
 
 ```json
 {
   "nome": "Maria Silva",
   "telefone": "11999999999",
-  "email": "maria.silva@email.com",
   "dataNascimento": "1990-05-20",
   "documentos": [
     {
-      "tipo": "CPF",
-      "numero": "12345678900"
+      "tipoDocumento": "CPF",
+      "descricao": "Cadastro de Pessoa Fisica"
     }
   ]
 }
 ```
 
-### Response
+Exemplo de response:
 
 ```json
 {
   "id": 1,
   "nome": "Maria Silva",
   "telefone": "11999999999",
-  "email": "maria.silva@email.com",
   "dataNascimento": "1990-05-20",
+  "dataInclusao": "2026-07-06T15:30:00",
+  "dataAtualizacao": "2026-07-06T15:30:00",
   "documentos": [
     {
-      "tipo": "CPF",
-      "numero": "12345678900"
+      "tipoDocumento": "CPF",
+      "descricao": "Cadastro de Pessoa Fisica",
+      "dataInclusao": "2026-07-06T15:30:00",
+      "dataAtualizacao": "2026-07-06T15:30:00"
     }
   ]
 }
 ```
 
----
-
-## Listar Beneficiários
+### Listar Beneficiários
 
 ```http
 GET /beneficiarios
 ```
 
----
+Retorna todos os beneficiários cadastrados com seus documentos associados.
 
-## Listar Documentos de um Beneficiário
+### Listar Documentos de um Beneficiário
 
 ```http
 GET /beneficiarios/{id}/documentos
 ```
 
----
+Retorna todos os documentos associados ao beneficiário informado.
 
-## Atualizar Beneficiário
+### Atualizar Beneficiário
 
 ```http
 PUT /beneficiarios/{id}
 ```
 
-### Request
+Exemplo de request:
 
 ```json
 {
   "nome": "Maria Silva Atualizada",
   "telefone": "11988888888",
-  "email": "maria.atualizada@email.com",
   "dataNascimento": "1990-05-20",
   "documentos": [
     {
-      "tipo": "CPF",
-      "numero": "12345678900"
+      "tipoDocumento": "CPF",
+      "descricao": "Cadastro de Pessoa Fisica"
     },
     {
-      "tipo": "RG",
-      "numero": "123456789"
+      "tipoDocumento": "RG",
+      "descricao": "Registro Geral"
     }
   ]
 }
 ```
 
----
-
-## Remover Beneficiário
+### Remover Beneficiário
 
 ```http
 DELETE /beneficiarios/{id}
 ```
 
-### Retorno
+Retorno esperado:
 
 ```http
 204 No Content
 ```
 
----
+## Validações
 
-# Validações
+A API utiliza Bean Validation para validar os dados recebidos nas requisições.
 
-A API utiliza Bean Validation para validar os dados recebidos.
-
-Validações implementadas:
+Exemplos de validações aplicadas:
 
 - Nome obrigatório
 - Telefone obrigatório
-- Email obrigatório e válido
-- Data de nascimento obrigatória e no passado
+- Data de nascimento obrigatória
+- Data de nascimento deve estar no passado
 - Lista de documentos obrigatória
-- Pelo menos um documento
+- Ao menos um documento deve ser informado
 - Tipo do documento obrigatório
-- Número do documento obrigatório
+- Descrição do documento obrigatória
 
----
+## Tratamento de Erros
 
-# Tratamento de Erros
+A aplicação possui tratamento global de erros com `@RestControllerAdvice`.
 
-Foi implementado tratamento global utilizando:
+Foram criadas exceções customizadas para tornar os retornos mais claros:
 
-```
-@RestControllerAdvice
-```
+- `ResourceNotFoundException`
+- `BusinessException`
 
-Exceções customizadas:
-
-- ResourceNotFoundException
-- BusinessException
-
-## Exemplo de erro
+Exemplo de erro para recurso não encontrado:
 
 ```json
 {
@@ -250,7 +231,7 @@ Exceções customizadas:
 }
 ```
 
-## Exemplo de erro de validação
+Exemplo de erro de validação:
 
 ```json
 {
@@ -258,17 +239,17 @@ Exceções customizadas:
   "status": 400,
   "timestamp": "2026-07-06T15:30:00-03:00",
   "errors": {
-    "email": "Email deve ser valido",
-    "nome": "Nome e obrigatorio"
+    "nome": "Nome e obrigatorio",
+    "dataNascimento": "Data de nascimento deve estar no passado"
   }
 }
 ```
 
----
+## Banco de Dados
 
-# Banco de Dados
+A aplicação utiliza PostgreSQL como banco de dados relacional.
 
-A aplicação utiliza PostgreSQL.
+As configurações estão no arquivo `application.yaml`.
 
 Configuração padrão:
 
@@ -278,78 +259,74 @@ spring:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/health_beneficiaries}
     username: ${DATABASE_USERNAME:health}
     password: ${DATABASE_PASSWORD:health}
-
   jpa:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
     show-sql: ${JPA_SHOW_SQL:true}
 ```
 
----
+## Executando com Docker
 
-# Executando com Docker
+O projeto possui um arquivo `docker-compose.yml` para subir o PostgreSQL localmente.
 
-Subir o banco:
+Para iniciar o banco:
 
 ```bash
 docker compose up -d
 ```
 
-Configuração:
+Configuração do banco:
 
-| Campo | Valor |
-|-------|-------|
-| Database | health_beneficiaries |
-| Usuário | health |
-| Senha | health |
-| Porta | 5432 |
+```text
+Database: health_beneficiaries
+User: health
+Password: health
+Port: 5432
+```
 
-Parar o banco:
+Para parar o banco:
 
 ```bash
 docker compose down
 ```
 
----
+## Como Executar a Aplicação
 
-# Como Executar a Aplicação
+### Pré-requisitos
 
-## Pré-requisitos
+- Java 21 ou superior
+- Docker e Docker Compose
+- Maven ou Maven Wrapper
 
-- Java 21+
-- Docker
-- Docker Compose
-- Maven
-
-### 1. Subir o banco
+### Passo 1: Subir o Banco de Dados
 
 ```bash
 docker compose up -d
 ```
 
-### 2. Executar a aplicação
+### Passo 2: Executar a Aplicação
 
-Linux/macOS
+No Linux ou macOS:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-Windows
+No Windows:
 
 ```bash
 mvnw.cmd spring-boot:run
 ```
 
-A aplicação estará disponível em:
+A aplicação ficará disponível em:
 
 ```text
 http://localhost:8080/health-beneficiaries/api
 ```
 
----
+## Swagger
 
-# Swagger
+A documentação dos endpoints foi feita com SpringDoc OpenAPI.
 
 Após iniciar a aplicação, acesse:
 
@@ -357,86 +334,60 @@ Após iniciar a aplicação, acesse:
 http://localhost:8080/health-beneficiaries/api/swagger-ui.html
 ```
 
----
+## Testes
 
-# Testes
+Foram criados testes unitários para a camada de service utilizando JUnit 5 e Mockito.
 
-Foram desenvolvidos testes unitários utilizando:
-
-- JUnit 5
-- Mockito
-
-### Cenários
+Cenários testados:
 
 - Criar beneficiário com sucesso
-- Impedir criação com email já cadastrado
-- Atualizar beneficiário inexistente
+- Atualizar beneficiário com sucesso
+- Erro ao atualizar beneficiário inexistente
 - Deletar beneficiário com sucesso
-- Deletar beneficiário inexistente
+- Erro ao deletar beneficiário inexistente
 
-Executar testes:
+Para executar os testes:
 
-Linux/macOS
+No Linux ou macOS:
 
 ```bash
 ./mvnw test
 ```
 
-Windows
+No Windows:
 
 ```bash
 mvnw.cmd test
 ```
 
----
+## Build
 
-# Build
+Para gerar o build da aplicação:
 
-Gerar o artefato:
-
-Linux/macOS
+No Linux ou macOS:
 
 ```bash
 ./mvnw clean package
 ```
 
-Windows
+No Windows:
 
 ```bash
 mvnw.cmd clean package
 ```
 
-O arquivo `.jar` será gerado em:
+O artefato `.jar` será gerado no diretório:
 
 ```text
 target/
 ```
 
----
+## Autenticação
 
-# Autenticação
+A autenticação/autorização foi indicada como opcional no enunciado da avaliação. Nesta implementação, o foco foi a entrega completa das funcionalidades obrigatórias da API REST, persistência relacional, validações, tratamento de erros, documentação Swagger e testes unitários.
 
-A autenticação foi definida como **opcional** no enunciado da avaliação.
+## Considerações Finais
 
-Nesta implementação, foi priorizada a entrega completa das funcionalidades obrigatórias:
+A aplicação foi desenvolvida seguindo boas práticas de backend com Java e Spring Boot, mantendo código limpo, responsabilidades bem definidas entre camadas, validação de entrada, tratamento centralizado de erros e documentação dos endpoints.
 
-- CRUD completo
-- Persistência com PostgreSQL
-- Validações
-- Tratamento global de erros
-- Swagger
-- Testes unitários
-
----
-
-# Considerações Finais
-
-A aplicação foi desenvolvida seguindo boas práticas de desenvolvimento backend com Java e Spring Boot, adotando arquitetura em camadas, separação de responsabilidades, validação de entrada, tratamento centralizado de exceções e documentação dos endpoints.
-
-O projeto foi estruturado para facilitar futuras evoluções, como:
-
-- Autenticação JWT
-- Paginação
-- Filtros de busca
-- Auditoria de criação e atualização
-- Deploy em ambiente cloud
+O projeto está preparado para evolução, permitindo futuras melhorias como autenticação JWT, paginação, filtros de busca, auditoria avançada e deploy em ambiente cloud.
